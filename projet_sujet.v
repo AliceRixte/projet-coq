@@ -63,18 +63,16 @@ destruct falseAnd.
 apply H.
 auto.
 apply H.
-split.
-intro.
-apply notEM.
-right.
-auto.
-intro.
-apply notEM.
-left.
-auto.
+split; intro; apply notEM; right || left; auto.
+
 Qed.
 
+Lemma peirceClassic_weak : peirce -> classic.
 
+Proof.
+intros pl P nnP.
+unfold pl.
+Qed.
 (** [Lemma peirce_classic : forall P:Prop, (classic -> P) -> (peirce -> P).]*)
 (**  *)
 (** **** Question 2:*)(** Prouvez la dualité classique entre [exists] et [forall].*)
