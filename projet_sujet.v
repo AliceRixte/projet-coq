@@ -46,7 +46,7 @@ Definition implies_to_or := forall P Q:Prop, (P->Q)->(~P\/Q).
 (** *** Exercice 1: preuves classiques *)
 (***************************************)
 (** **** Question 1:*)(** Prouvez que les logiques induites par ces propriétés ont la même 
-expressivité. Le plus simple est de choisir un ordre (par exemple
+expressivité. Le plus simple est de choisir un ordre(par exemple
 classic => peirce => implies_to_or => ... => classic) et prouvez une série de lemmes de la forme:
                        *)
 (** [Lemma peirce_classic : forall P, (classic -> P) -> (peirce -> P).]*)
