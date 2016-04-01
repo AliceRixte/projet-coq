@@ -50,7 +50,7 @@ expressivité. Le plus simple est de choisir un ordre (par exemple
 classic => peirce => implies_to_or => ... => classic) et prouvez une série de lemmes de la forme:
                        *)
 
-Lemma classicEM : classic -> excluded_middle.
+Lemma classic_EM_weak : classic -> excluded_middle.
 
 Proof.
 intro Cl.
@@ -67,11 +67,21 @@ split; intro; apply notEM; right || left; auto.
 
 Qed.
 
+(*Lemma EM_classic : forall P:Prop, (excluded_middle -> P) -> (classic -> P).
+Proof.
+intros P EM Cl.
+apply EM.
+apply classic_EM_weak.
+assumption.
+Qed.*)
+
+
 Lemma peirceClassic_weak : peirce -> classic.
 
 Proof.
 intros pl P nnP.
-unfold pl.
+apply pl
+(*unfold pl.*)
 Qed.
 (** [Lemma peirce_classic : forall P:Prop, (classic -> P) -> (peirce -> P).]*)
 (**  *)
