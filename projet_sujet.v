@@ -77,13 +77,34 @@ assumption.
 Qed.
 
 
-
-Lemma ito_peirce_weak : implies_to_or -> peirce.
+Lemma demorgan_classic_weak : de_morgan_not_and_not -> classic.
 Proof.
-intro ito.
-intros P Q.
-assert (((P->Q)->P) -> (~(P->Q)\/P)).
-apply ito.
+intro dm.
+intros P nnP.
+assert ((P\/P) -> P). 
+intro pop.
+destruct pop; auto.
+apply H.
+assert (~(~P/\~P) -> P\/P).
+apply dm.
+apply H0.
+intro nanP. (*not and not p*)
+apply nnP.
+apply nanP.
+Qed.
+
+Lemma classic_DM : forall P:Prop, (classic -> P) -> (de_morgan_not_and_not -> P).
+Proof.
+intros P Cl DM.
+apply Cl.
+apply demorgan_classic_weak.
+assumption.
+Qed.
+
+
+
+
+
 assert (((~(P -> Q)) \/ P) -> P).
 intro tmp.
 destruct tmp.
