@@ -152,15 +152,22 @@ apply pl.
 apply EM_peirce_weak.
 assumption.
 Qed.
+
+
 (** [Lemma peirce_classic : forall P:Prop, (classic -> P) -> (peirce -> P).]*)
 (**  *)
 (** **** Question 2:*)(** Prouvez la dualité classique entre [exists] et [forall].*)
 Theorem forallExists : forall A, forall P : A -> Prop,
                          peirce -> (~ (forall x : A, P x) <-> (exists x : A, ~ P x)).
+Proof.
+admit.
+Qed.
 (** Et le symétrique? As-t-on besoin de la logique classique? *)
 Theorem existsForall : forall A, forall P : A -> Prop,
                          (~ (exists x : A, P x) <-> (forall x : A, ~ P x)).
-(**  *)
+Proof.
+admit.
+Qed.
 
 
 (**************************************)
@@ -211,7 +218,17 @@ Print well_founded.
 (***********************************)
 (** **** Question 1:*)(** Ecrivez le prédicat sur les relations vérifiant (ii):
 "la relation n'admet pas de suite infinie décroissante". Ecrivez l'énoncé du sens direct).*)
-(**  *)   
+(**  *)
+Definition infDec (A:Set) (R:A->A->Prop) : Prop := exists a:A, forall b:A, R b a /\ a <> b -> exists c:A, R c b /\ b <> c.
+
+Check infDec.
+Definition notInfDec(A:Set) (R:A->A->Prop) : Prop := forall a:A, exists b:A, forall c:A, R b a /\ a<>b /\ (~R c b \/ b = c). 
+
+Theorem direct : forall A:Set, forall R:A->A->Prop, bienFonde A R -> notInfDec A R.
+Proof.
+admit.
+Qed.
+
 (** **** Question 2:*)(** Pour vous échauffer, prouver les deux lemmes suivants qui pourront
 vous servir dans la suite.*)
 Lemma nonAcce_uneEtape : forall (A:Set) (R : A -> A -> Prop) (a b:A),
