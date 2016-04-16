@@ -80,9 +80,9 @@ Lemma cl_pl : forall P:Prop, (classic -> P) -> (peirce -> P).
 apply simple_to_complex.
 intro pl.
 intros P nnP.
-assert ((~P -> P) ->P). 
+assert ((~P -> P) ->P) as plPFalse. (*on applique pl avec P et false*)
 apply pl.
-apply H.
+apply plPFalse.
 intro nP.
 destruct nnP.
 assumption.
@@ -96,17 +96,17 @@ Proof.
 apply simple_to_complex.
 intro em.
 intros P Q.
-assert (P\/~P).
+assert (P\/~P) as emP.
 apply em.
-destruct H.
+destruct emP as [Ptrue|nP].
 
-intro. (*si P*)
+intro . (*si P*)
 assumption.
 
 intro imp. (*si ~P*)
 apply imp.
 intro Ptrue.
-destruct H.
+destruct nP.
 assumption.
 Qed.
 
@@ -137,10 +137,10 @@ Proof.
 apply simple_to_complex.
 intro ito.
 intro P.
-assert ((P->P)->~P\/P).
+assert ((P->P)->~P\/P) as itoPP.
 apply ito.
 apply or_commut.
-apply H.
+apply itoPP.
 intro Pt.
 assumption.
 Qed.
@@ -152,14 +152,14 @@ Lemma ito_dm : forall P:Prop, (implies_to_or -> P) -> (de_morgan_not_and_not -> 
 Proof.
 apply simple_to_complex.
 intros dm P Q PiQ.
-assert (~(~~P/\~Q) -> (~P \/ Q)).
+assert (~(~~P/\~Q) -> (~P \/ Q)) as dm_nPQ. (*on applique dm avec ~P et Q*)
 apply dm.
-apply H.
+apply dm_nPQ.
 intro nAnd.
-destruct nAnd.
-destruct H0.
+destruct nAnd as [nnP nQ].
+destruct nnP.
 intro Ptrue.
-destruct H1.
+destruct nQ.
 apply PiQ.
 assumption.
 Qed.
@@ -198,7 +198,7 @@ apply cl_pl.
 intro cl.
 split.
 
-intro nforall. (* -> *)
+intro nforall. (* => *)
 apply cl.
 intro nexists.
 destruct nforall.
@@ -209,7 +209,7 @@ destruct nexists.
 exists x.
 assumption.
 
-intro exists_nPx. (* <- *)
+intro exists_nPx. (* <= *)
 destruct exists_nPx as [x nPx].
 intro forallPx.
 destruct nPx.
@@ -221,7 +221,20 @@ Qed.
 Theorem existsForall : forall A, forall P : A -> Prop,
                          (~ (exists x : A, P x) <-> (forall x : A, ~ P x)).
 Proof.
-admit.
+intros A P.
+split.
+
+intros nexists x nPx. (* => *)
+destruct nexists.
+exists x.
+assumption.
+
+intros forallnPx existsPx. (* <= *)
+destruct existsPx as [x Px].
+assert (~P x) as nPx.
+apply forallnPx .
+apply nPx.
+assumption.
 Qed.
 
 
