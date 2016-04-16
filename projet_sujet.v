@@ -50,6 +50,29 @@ expressivité. Le plus simple est de choisir un ordre (par exemple
 classic => peirce => implies_to_or => ... => classic) et prouvez une série de lemmes de la forme:
                        *)
 
+(* Abréviations : 
+ * peirce : pl (peirce law)
+ * classic : cl
+ * excluded_middle : em
+ * de_morgan_not_and_not : dm
+ * implies_to_or : ito
+ *)
+
+(* Ordre choisi : 
+ * classic => peirce => excluded_middle => implies_to_or 
+ * => de_morgan_not_and_not => classic
+ *)
+
+(* Pour montrer les lemmes, on va se contenter de montrer des lemmes du type loi1 => loi2. Pour cela, on a besoin du lemme intermédiaire suivant : *)
+
+Lemma simple_to_complex : forall A B:Prop, (B->A) -> (forall P : Prop, (A->P) -> (B->P)).
+Proof.
+intros A B BiA P AiP Bt.
+apply AiP.
+apply BiA.
+assumption.
+Qed.
+
 (*excluded_middle -> classic *)
 Lemma classic_EM_weak : classic -> excluded_middle.
  
@@ -153,6 +176,78 @@ apply EM_peirce_weak.
 assumption.
 Qed.
 
+
+Lemma peirce_classic_weak : peirce -> classic.
+Proof.
+intro pl.
+intros P nnP.
+assert ((~P -> P) ->P). 
+apply pl.
+apply H.
+intro nP.
+destruct nnP.
+assumption.
+Qed.
+
+Lemma classic_peirce :  forall P:Prop, (classic -> P) -> (peirce -> P).
+Proof.
+intros P cl pl.
+apply cl.
+apply peirce_classic_weak.
+assumption.
+Qed.
+
+Lemma ito_EM_weak : implies_to_or -> excluded_middle.
+Proof.
+intro ito.
+intro P.
+assert ((P->P)->~P\/P).
+apply ito.
+assert ((~P\/P) -> P\/ ~P).
+intro.
+destruct H0.
+right.
+assumption.
+left.
+assumption.
+apply H0.
+apply H.
+intro Pt.
+assumption.
+Qed.
+
+Lemma EM_ito :  forall P:Prop, (excluded_middle -> P) -> (implies_to_or -> P).
+Proof.
+intros P em ito.
+apply em.
+apply ito_EM_weak.
+assumption.
+Qed.
+
+Lemma cl_dm_weak : classic -> de_morgan_not_and_not.
+Proof.
+intros cl P Q nAnd.
+apply cl.
+intro nOr.
+destruct nAnd.
+split.
+intro nP.
+destruct nOr.
+left.
+assumption.
+intro nP.
+destruct nOr.
+right.
+assumption.
+Qed.
+
+Lemma dm_cl :  forall P:Prop, (de_morgan_not_and_not -> P) -> (classic -> P).
+Proof.
+intros P dm cl.
+apply dm.
+apply cl_dm_weak.
+assumption.
+Qed.
 
 (** [Lemma peirce_classic : forall P:Prop, (classic -> P) -> (peirce -> P).]*)
 (**  *)
