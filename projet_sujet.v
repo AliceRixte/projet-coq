@@ -73,112 +73,11 @@ apply BiA.
 assumption.
 Qed.
 
-(*excluded_middle -> classic *)
-Lemma classic_EM_weak : classic -> excluded_middle.
- 
-Proof.
-intro Cl.
-intro P.
-apply Cl.
-intro notEM.
-assert ((~~P /\ ~P) -> False).
-intro falseAnd.
-destruct falseAnd.
-apply H.
-auto.
-apply H.
-split; intro; apply notEM; right || left; auto.
-
-Qed.
-
-Lemma EM_classic : forall P:Prop, (excluded_middle -> P) -> (classic -> P).
-Proof.
-intros P EM Cl.
-apply EM.
-apply classic_EM_weak.
-assumption.
-Qed.
 
 
-Lemma demorgan_classic_weak : de_morgan_not_and_not -> classic.
-Proof.
-intro dm.
-intros P nnP.
-assert ((P\/P) -> P). 
-intro pop.
-destruct pop; auto.
-apply H.
-assert (~(~P/\~P) -> P\/P).
-apply dm.
-apply H0.
-intro nanP. (*not and not p*)
-apply nnP.
-apply nanP.
-Qed.
-
-Lemma classic_DM : forall P:Prop, (classic -> P) -> (de_morgan_not_and_not -> P).
-Proof.
-intros P Cl DM.
-apply Cl.
-apply demorgan_classic_weak.
-assumption.
-Qed.
-
-
-Lemma demorgan_implies_to_or_weak : de_morgan_not_and_not -> implies_to_or.
-Proof.
-intro dm.
-intros P Q.
-intro imp.
-assert (~(~~P/\~Q) -> (~P \/ Q)).
-apply dm.
-apply H.
-intro na.
-destruct na.
-destruct H0.
-intro Ptrue.
-destruct H1.
-apply imp.
-auto.
-Qed.
-
-Lemma ito_dm : forall P:Prop, (implies_to_or -> P) -> (de_morgan_not_and_not -> P).
-Proof.
-intros P ito dm.
-apply ito.
-apply demorgan_implies_to_or_weak.
-assumption.
-Qed.
-
-Lemma EM_peirce_weak : excluded_middle -> peirce.
-Proof.
-intro em.
-intros P Q.
-assert (P\/~P).
-apply em.
-destruct H.
-intro.
-auto.
-intro imp.
-apply imp.
-intro Ptrue.
-assert False.
-apply H.
-auto.
-elim H0.
-Qed.
-
-Lemma peirce_EM :  forall P:Prop, (peirce -> P) -> (excluded_middle -> P).
-Proof.
-intros P pl em.
-apply pl.
-apply EM_peirce_weak.
-assumption.
-Qed.
-
-
-Lemma peirce_classic_weak : peirce -> classic.
-Proof.
+(***** Classic => peirce *****)
+Lemma cl_pl : forall P:Prop, (classic -> P) -> (peirce -> P).
+apply simple_to_complex.
 intro pl.
 intros P nnP.
 assert ((~P -> P) ->P). 
@@ -189,65 +88,107 @@ destruct nnP.
 assumption.
 Qed.
 
-Lemma classic_peirce :  forall P:Prop, (classic -> P) -> (peirce -> P).
+
+
+(***** Peirce => excluded_middle *****)
+Lemma pl_em :  forall P:Prop, (peirce -> P) -> (excluded_middle -> P).
 Proof.
-intros P cl pl.
-apply cl.
-apply peirce_classic_weak.
+apply simple_to_complex.
+intro em.
+intros P Q.
+assert (P\/~P).
+apply em.
+destruct H.
+
+intro. (*si P*)
+assumption.
+
+intro imp. (*si ~P*)
+apply imp.
+intro Ptrue.
+destruct H.
 assumption.
 Qed.
 
-Lemma ito_EM_weak : implies_to_or -> excluded_middle.
+
+(***** excluded_middle => implies_to_or *****)
+
+(*Question : ici, le ; ne permet pas de factoriser le code... Comment faire.*)
+Lemma or_commut : forall P Q:Prop, P\/Q <-> Q\/P.
 Proof.
-intro ito.
-intro P.
-assert ((P->P)->~P\/P).
-apply ito.
-assert ((~P\/P) -> P\/ ~P).
-intro.
-destruct H0.
+intros P Q.
+split.
+intro or.
+destruct or.
 right.
 assumption.
 left.
 assumption.
-apply H0.
+intro or.
+destruct or.
+right.
+assumption.
+left.
+assumption.
+Qed.
+
+Lemma em_ito :  forall P:Prop, (excluded_middle -> P) -> (implies_to_or -> P).
+Proof.
+apply simple_to_complex.
+intro ito.
+intro P.
+assert ((P->P)->~P\/P).
+apply ito.
+apply or_commut.
 apply H.
 intro Pt.
 assumption.
 Qed.
 
-Lemma EM_ito :  forall P:Prop, (excluded_middle -> P) -> (implies_to_or -> P).
+
+
+(***** implies_to_or => de_morgan_not_and_not *****)
+Lemma ito_dm : forall P:Prop, (implies_to_or -> P) -> (de_morgan_not_and_not -> P).
 Proof.
-intros P em ito.
-apply em.
-apply ito_EM_weak.
+apply simple_to_complex.
+intros dm P Q PiQ.
+assert (~(~~P/\~Q) -> (~P \/ Q)).
+apply dm.
+apply H.
+intro nAnd.
+destruct nAnd.
+destruct H0.
+intro Ptrue.
+destruct H1.
+apply PiQ.
 assumption.
 Qed.
 
-Lemma cl_dm_weak : classic -> de_morgan_not_and_not.
+
+
+
+(***** de_morgan_not_and_not => classic *****)
+Lemma dm_cl :  forall P:Prop, (de_morgan_not_and_not -> P) -> (classic -> P).
 Proof.
+apply simple_to_complex.
 intros cl P Q nAnd.
 apply cl.
 intro nOr.
 destruct nAnd.
 split.
-intro nP.
+
+intro nP. (*on montre ~P ... *)
 destruct nOr.
 left.
 assumption.
-intro nP.
+
+intro nP. (*puis ~Q*)
 destruct nOr.
 right.
 assumption.
 Qed.
 
-Lemma dm_cl :  forall P:Prop, (de_morgan_not_and_not -> P) -> (classic -> P).
-Proof.
-intros P dm cl.
-apply dm.
-apply cl_dm_weak.
-assumption.
-Qed.
+
 
 (** [Lemma peirce_classic : forall P:Prop, (classic -> P) -> (peirce -> P).]*)
 (**  *)
