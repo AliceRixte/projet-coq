@@ -189,16 +189,35 @@ assumption.
 Qed.
 
 
-
-(** [Lemma peirce_classic : forall P:Prop, (classic -> P) -> (peirce -> P).]*)
-(**  *)
 (** **** Question 2:*)(** Prouvez la dualité classique entre [exists] et [forall].*)
 Theorem forallExists : forall A, forall P : A -> Prop,
                          peirce -> (~ (forall x : A, P x) <-> (exists x : A, ~ P x)).
 Proof.
-admit.
+intros A P.
+apply cl_pl.
+intro cl.
+split.
+
+intro nforall. (* -> *)
+apply cl.
+intro nexists.
+destruct nforall.
+intro x.
+apply cl.
+intro nPx.
+destruct nexists.
+exists x.
+assumption.
+
+intro exists_nPx. (* <- *)
+destruct exists_nPx as [x nPx].
+intro forallPx.
+destruct nPx.
+apply forallPx.
 Qed.
-(** Et le symétrique? As-t-on besoin de la logique classique? *)
+
+
+(** Et le symétrique? A-t-on besoin de la logique classique? *)
 Theorem existsForall : forall A, forall P : A -> Prop,
                          (~ (exists x : A, P x) <-> (forall x : A, ~ P x)).
 Proof.
