@@ -218,6 +218,8 @@ Qed.
 
 
 (** Et le symétrique? A-t-on besoin de la logique classique? *)
+
+(*ici, on n'a pas besoin de la logique classique car on n'utilise à aucun moment un lemme équivalent au tiers exclus*)
 Theorem existsForall : forall A, forall P : A -> Prop,
                          (~ (exists x : A, P x) <-> (forall x : A, ~ P x)).
 Proof.
@@ -290,7 +292,7 @@ Print well_founded.
 Definition infDec (A:Set) (R:A->A->Prop) : Prop := exists a:A, forall b:A, R b a /\ a <> b -> exists c:A, R c b /\ b <> c.
 
 Check infDec.
-Definition notInfDec(A:Set) (R:A->A->Prop) : Prop := forall a:A, exists b:A, forall c:A, R b a /\ a<>b /\ (~R c b \/ b = c). 
+Definition notInfDec(A:Set) (R:A->A->Prop) : Prop := forall a:A, exists b:A, forall c:A, R b a /\ a<>b /\ (~R c b \/ b = c).
 
 Theorem direct : forall A:Set, forall R:A->A->Prop, bienFonde A R -> notInfDec A R.
 Proof.
@@ -299,25 +301,47 @@ Qed.
 
 (** **** Question 2:*)(** Pour vous échauffer, prouver les deux lemmes suivants qui pourront
 vous servir dans la suite.*)
-Lemma nonAcce_uneEtape : forall (A:Set) (R : A -> A -> Prop) (a b:A),
-                           R a b -> ~ Acce A R a -> ~ Acce A R b.
-Qed.
 
 Lemma acce_uneEtape : forall (A:Set) (R : A -> A -> Prop) (a b:A),
                         R a b -> Acce A R b -> Acce A R a.
+intros A R a b aInfb bAcce.
+inversion bAcce.
+apply H.
+assumption.
 Qed.
+
+Lemma nonAcce_uneEtape : forall (A:Set) (R : A -> A -> Prop) (a b:A),
+                           R a b -> ~ Acce A R a -> ~ Acce A R b.
+intros A R a b aInfb aNotAcce bAcce.
+destruct aNotAcce.
+apply acce_uneEtape with (b:=b);assumption.
+Qed.
+
+
 (**  *)   
 (** **** Question 3:*)(** Prouvez maintenant le lemme suivant permettant de réaliser des inductions
 en exploitant une relation bien fondée (notez que c'est le but premier des relations bien
 fondées: permettre d'aller au delà des fonctions récursives structurellement décroissantes).
 Lui aussi pourra vous être utile. Pensez bien au lemme d'induction généré par la définition
 inductive du prédicat [Acce].*)
+
 Lemma bienFonde_ind : forall (A : Set) (R : A -> A -> Prop),
                         bienFonde A R ->
                         forall P : A -> Prop,
                           (forall x : A, (forall y : A, R y x -> P y) -> P x) ->
                           forall a : A, P a.
+
+Check Acce_ind.
+intros A R bfR P heredite a.
+apply Acce_ind with (A:=A) (R:=R).
+unfold bienFonde in bfR.
+intros x RimpAcce RimpP.
+apply heredite.
+assumption.
+unfold bienFonde in bfR.
+apply bfR.
 Qed.
+
 (**  *) 
 (** *** Exercice 3: Preuves de bonne fondaison **)
 (************************************************)
