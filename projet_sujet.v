@@ -347,8 +347,15 @@ Qed.
 (************************************************)
 (** **** Question 1:*)(** On montre que la relation [< : nat -> nat -> Prop] est bien fondée 
 (conseil: vous aurez besoin d'un lemme d'induction forte).*)
+Check nat_ind.
 
+Lemma strong_induction : forall P : nat -> Prop, P 0 -> (forall m : nat, (forall n : nat, lt n m -> P n) -> P m) -> forall n : nat, P n.
+intros P P0 heredite.
+Check nat_ind.
 Lemma lt_bienFonde : bienFonde nat lt.
+unfold bienFonde.
+intro a.
+Print lt.
 Qed.
 (**  *)
 
