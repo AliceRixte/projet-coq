@@ -289,10 +289,19 @@ Print well_founded.
 (** **** Question 1:*)(** Ecrivez le prédicat sur les relations vérifiant (ii):
 "la relation n'admet pas de suite infinie décroissante". Ecrivez l'énoncé du sens direct).*)
 (**  *)
+
+(*
 Definition infDec (A:Set) (R:A->A->Prop) : Prop := exists a:A, forall b:A, R b a /\ a <> b -> exists c:A, R c b /\ b <> c.
 
 Check infDec.
 Definition notInfDec(A:Set) (R:A->A->Prop) : Prop := forall a:A, exists b:A, forall c:A, R b a /\ a<>b /\ (R c b -> b = c). (*(~R c b \/ b = c). *)
+*)
+
+(* ici une suite est une fonction de N dans un certain ensemble A*) 
+Definition bienFonde2 (A:Set) (R:A->A->Prop) : Prop := 
+  ~ (exists seq : nat->A, forall n : nat, R (seq (S n)) (seq n)).
+
+
 
 (*Theorem direct : forall A:Set, forall R:A->A->Prop, bienFonde A R -> notInfDec A R.
 Proof.
@@ -384,14 +393,16 @@ Qed.
 la relation lexicographique sur ces deux relations. Prouvez maintenant que si deux relations
 sont bien fondées alors la relation lexicographique de ces deux relations l'est aussi.*)
 (**  *)     
-Check infDec.
 Print le.
 Locate "(".
 Print pair.
 Print prod.
+Print nat.
+Print S.
 
-Definition lex (A:Set) (R:A->A->Prop) (R' : A->A->Prop) (c: A*A) (c': A*A) : Prop :=
-R (fst c) (fst c') \/ (fst c = fst c' /\ R (snd c) (snd c')).
+Inductive lex (A:Set) (R:A->A->Prop) (R' : A->A->Prop) : A*A -> A*A -> Prop := 
+fstInf : forall c c' : A*A, R (fst c) (fst c') -> lex A R R' c c'
+|sndInf :  forall c c' : A*A, fst c = fst c' /\ R' (snd c) (snd c') -> lex A R R' c c'.
 
 Lemma bfLex : forall (A:Set) (R R':A->A->Prop), bienFonde A R -> bienFonde A R' ->bienFonde (A*A) (lex A R R').
 Proof.
@@ -402,23 +413,27 @@ apply Accessible.
 intros y ylexa.
 unfold lex in ylexa.
 destruct ylexa.
-unfold bienFonde in bfR.ù*)
+unfold bienFonde in bfR.*)
 admit.
 Qed.
 
-
-
+Check bienFonde_ind.
 (** *** Exercice 4: Le sens direct **)
 (************************************)
 (** Et maintenant, prouvez le sens direct de l'équivalence entre (i) et (ii). *)
 (**  *)     
-Theorem direct : forall A:Set, forall R:A->A->Prop, bienFonde A R -> notInfDec A R.
+Theorem direct : forall A:Set, forall R:A->A->Prop, bienFonde A R -> bienFonde2 A R.
 Proof.
-unfold notInfDec.
-intros A R bfR a.
+unfold bienFonde2.
+intros A R bfR existsInfDec.
+destruct existsInfDec as [seq seqIsInfDec] .
 
-
-admit.
+assert (forall a:A, (exists n : nat, a = seq n) -> ~ Acce A R a).
+intro a.
+apply bienFonde_ind with (R:=R).
+assumption.
+intros x HI aSeqn.
+apply HI with (y:=a).
 Qed.
 
 
