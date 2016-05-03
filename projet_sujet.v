@@ -292,12 +292,12 @@ Print well_founded.
 Definition infDec (A:Set) (R:A->A->Prop) : Prop := exists a:A, forall b:A, R b a /\ a <> b -> exists c:A, R c b /\ b <> c.
 
 Check infDec.
-Definition notInfDec(A:Set) (R:A->A->Prop) : Prop := forall a:A, exists b:A, forall c:A, R b a /\ a<>b /\ (~R c b \/ b = c).
+Definition notInfDec(A:Set) (R:A->A->Prop) : Prop := forall a:A, exists b:A, forall c:A, R b a /\ a<>b /\ (R c b -> b = c). (*(~R c b \/ b = c). *)
 
-Theorem direct : forall A:Set, forall R:A->A->Prop, bienFonde A R -> notInfDec A R.
+(*Theorem direct : forall A:Set, forall R:A->A->Prop, bienFonde A R -> notInfDec A R.
 Proof.
 admit.
-Qed.
+Qed.*)
 
 (** **** Question 2:*)(** Pour vous échauffer, prouver les deux lemmes suivants qui pourront
 vous servir dans la suite.*)
@@ -349,25 +349,78 @@ Qed.
 (conseil: vous aurez besoin d'un lemme d'induction forte).*)
 Check nat_ind.
 
-Lemma strong_induction : forall P : nat -> Prop, P 0 -> (forall m : nat, (forall n : nat, lt n m -> P n) -> P m) -> forall n : nat, P n.
-intros P P0 heredite.
-Check nat_ind.
+Lemma strong_induction : forall P : nat -> Prop, P 0 -> (forall m : nat, (forall n : nat, lt n m -> P n) -> P m) -> forall k : nat, P k.
+intros P P0 heredite n.
+apply heredite.
+induction n.
+
+intros n2 n2lt0. (*initialisation*)
+unfold lt in n2lt0.
+inversion n2lt0.
+
+intros n0 n0ltSn. (*hérédité*)
+inversion n0ltSn.
+apply heredite.
+assumption.
+apply IHn.
+assumption.
+Qed.
+
 Lemma lt_bienFonde : bienFonde nat lt.
 unfold bienFonde.
-intro a.
-Print lt.
+apply strong_induction.
+
+apply Accessible. (*initialisation*)
+intros y ylt0.
+inversion ylt0.
+intros m H. (*hérédité*)
+apply Accessible.
+assumption.
 Qed.
-(**  *)
+
+
 
 (** **** Question 2:*)(** Ecrivez le prédicat [lex] qui prend deux relations et qui formalise
 la relation lexicographique sur ces deux relations. Prouvez maintenant que si deux relations
 sont bien fondées alors la relation lexicographique de ces deux relations l'est aussi.*)
 (**  *)     
+Check infDec.
+Print le.
+Locate "(".
+Print pair.
+Print prod.
+
+Definition lex (A:Set) (R:A->A->Prop) (R' : A->A->Prop) (c: A*A) (c': A*A) : Prop :=
+R (fst c) (fst c') \/ (fst c = fst c' /\ R (snd c) (snd c')).
+
+Lemma bfLex : forall (A:Set) (R R':A->A->Prop), bienFonde A R -> bienFonde A R' ->bienFonde (A*A) (lex A R R').
+Proof.
+(*intros A R R' bfR bfR'.
+unfold bienFonde.
+intro a.
+apply Accessible.
+intros y ylexa.
+unfold lex in ylexa.
+destruct ylexa.
+unfold bienFonde in bfR.ù*)
+admit.
+Qed.
+
+
 
 (** *** Exercice 4: Le sens direct **)
 (************************************)
 (** Et maintenant, prouvez le sens direct de l'équivalence entre (i) et (ii). *)
 (**  *)     
+Theorem direct : forall A:Set, forall R:A->A->Prop, bienFonde A R -> notInfDec A R.
+Proof.
+unfold notInfDec.
+intros A R bfR a.
+
+
+admit.
+Qed.
+
 
 (** ** 2. Réciproque en logique classique **)
 (*******************************************)
