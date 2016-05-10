@@ -432,8 +432,15 @@ assert (forall a:A, (exists n : nat, a = seq n) -> ~ Acce A R a).
 intro a.
 apply bienFonde_ind with (R:=R).
 assumption.
-intros x HI aSeqn.
-apply HI with (y:=a).
+admit. (*TODO*)
+assumption.
+unfold bienFonde in bfR.
+assert (~Acce A R (seq 0)).
+apply H.
+exists 0.
+reflexivity.
+destruct H0.
+apply bfR.
 Qed.
 
 
@@ -447,6 +454,13 @@ Qed.
 On introduit donc un axiome classique que l'on pourra utiliser dans la suite. La syntaxe est
 "[Axiom [nom_axiome] : P.]".*)
 
+(*Intuition : si on part de l'hypothèse qu'il n'existe pas de suite infiniment décroissante, 
+on risque d'avoir du mal à trouver les éléments minimum de la relation de bonne fondaison 
+car on a rien de concret : on n'a que des suites finies dont on ne connaît rien, 
+et en particulier pas les premiers éléments. 
+J'imagine qu'il vaut mieux raisonner par contraposée, ce qui nécessite le tiers exclus.
+On peut alors construire récursivement une suite infiniment décroissante à partir de la relation bien fondée*)
+
 (** Tentez de prouver la réciproque sur papier en logique classique.
  De quoi avez-vous besoin ?
  Est-ce que c'est prouvable dans Coq (avec l'axiome classique) ?*)
@@ -455,9 +469,29 @@ théorie des ensembles de Zermelo-Fraenkel
 (cf.Wikipedia).*)
 (**  *)
 
+Lemma classic_ax : classic.
+admit.
+Qed. (*TODO : OK?*)
+
 (** *** Exercice 6: la réciproque **)
 (***********************************)
 (** Et maintenant, muni de ces deux axiomes, prouvez la réciproque.*)
+
+Lemma contraposee : forall p q:Prop, (~p -> ~q) -> q -> p.
+intros p q npInq qTrue.
+apply classic_ax.
+intro np.
+apply npInq; assumption.
+Qed.
+
+Theorem indirect : forall A:Set, forall R:A->A->Prop, bienFonde2 A R -> bienFonde A R.
+intros A R.
+apply contraposee.
+intros nbfR bf2.
+destruct bf2.
+admit. (*TODO*)
+Qed.
+
 
 
 (**************************************************)
@@ -496,7 +530,7 @@ Definition removeSpec (a : {x : nat | x > 0}) : nat  :=
     | exist a' Pa => a'
   end.
 Check removeSpec.
-(** Voyons maintenant comment composer des spécifications. Par exemple: *)
+(** Voyons maintenant comment composer des spécifications. Par exemple: *) 
 Check le_gt_dec.
 Check (le_gt_dec 1 2).
 (** Le "+" de [le_gt_dec] est l'équivalent du ou logique mais à valeur dans les données (possiblement
@@ -512,6 +546,11 @@ Require Import Coq.Arith.Even.
 Open Scope nat_scope.
 Parameter div2_of_even : forall n:nat, even n -> {p:nat | n = p+p}.
 Parameter test_even : forall n:nat, {even n}+{even (pred n)}.
+(*Check {even n}
+Function div2 (n : nat) : forall n: nat , {p:nat | n = p+p}+{p:nat | pred n = p+p} := 
+  match test_even n with 
+    |left a -> *)
+
 
 (** Question 2: Ecrivez (sans tactique) une fonction prédecesseur fortement spécifiée. *)
 
