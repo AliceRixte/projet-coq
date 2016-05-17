@@ -428,13 +428,30 @@ unfold bienFonde2.
 intros A R bfR existsInfDec.
 destruct existsInfDec as [seq seqIsInfDec] .
 
-assert (forall a:A, (exists n : nat, a = seq n) -> ~ Acce A R a).
+Definition P (A:Set) (R:A->A->Prop) (seq:nat -> A)(x:A) :=  (exists n : nat, x = seq n) -> ~ Acce A R x.
+
+assert (forall a:A, P A R seq a). 
 intro a.
 apply bienFonde_ind with (R:=R).
 assumption.
-admit. (*TODO*)
+
+
+unfold P. (*hérédité*)
+intros x HR xInSeq.
+destruct xInSeq as [n xInSeq].
+
+assert (R (seq (S n)) x). (*Évite d'avoir à faire deux fois la meême preuve*)
+rewrite xInSeq.
+apply seqIsInfDec.
+apply nonAcce_uneEtape with (a:=seq (S n)).
 assumption.
-unfold bienFonde in bfR.
+apply HR.
+assumption.
+exists (S n).
+reflexivity.
+
+
+unfold bienFonde in bfR. (*conclusion*)
 assert (~Acce A R (seq 0)).
 apply H.
 exists 0.
