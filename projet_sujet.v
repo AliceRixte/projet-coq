@@ -271,6 +271,8 @@ Inductive Acce (A:Set) (R:A->A->Prop) : A->Prop :=
 qui explore tous les éléments plus petits que [x]. Moralement, ce prédicat est donc prouvable
 uniquement pour les éléments qui n'appartiennent à aucune chaîne infinie décroissante.*)
 
+
+
 (** On peut donc formaliser le prédicat "bien fondée":*)
 Definition bienFonde (A:Set) (R:A->A->Prop) : Prop := forall a:A, Acce A R a.
 (** Cette présentation est plus effective que (ii), si vous prouvez qu'une relation
@@ -486,17 +488,37 @@ théorie des ensembles de Zermelo-Fraenkel
 (cf.Wikipedia).*)
 (**  *)
 
-Axiom classic_ax : peirce.
 
-(*Axiom choice : forall A:Set, forall seq_set : nat -> Set, (forall ) forall B: Set, (exists n : nat, A = seq n) -> (exists seq_el: nat -> A,*) 
 
 
 (** *** Exercice 6: la réciproque **)
 (***********************************)
 (** Et maintenant, muni de ces deux axiomes, prouvez la réciproque.*)
 
-Lemma contraposee : forall p q:Prop, (~p -> ~q) -> q -> p.
-intros p q npInq qTrue.
+Axiom classic_ax : peirce.
+
+(* pour construire une suite infiniment décroissante d'éléments non accessible, 
+on va devoir à chaque étape choisir un élément des éléments plus petits que
+l'élément qu'on est en train de considérer. On a donc besoin de l'axiome du choix.
+En fait, l'axiome du choix dépendant va nous suffire ici.*)
+
+(*L'axiome du choix dépendant tel qu'il apparaît sur wikipedia*)
+Axiom choice_v0 : forall A:Set, forall R : A -> A -> Prop,
+                    (exists x y : A, R x y) ->
+                    (forall x:A, exists y : A, R x y) ->
+                    (exists seq:nat -> A, forall n :nat, R (seq n) (seq (S n))).
+
+
+(*Je me suis permis de faire la modification de l'axiome directement vers l'ensemble des éléments satisfaisant un certain prédicat. Pour prouver l'implication du premier énoncé vers le second, il faudrait utiliser choice_v0 avec le type dépendant {x:A|P x}. Je n'ai malheureusement pas le temps de le faire (deuxième projet oblige ;) )*)
+Axiom choice : forall A:Set, forall R:A->A->Prop, forall P: A -> Prop,
+                    (exists x y : A , P x /\ P y /\ R y x) ->
+                    (forall x:A,P x -> (exists y : A, P y /\ R y x)) ->
+                    (exists seq:nat -> A, forall n :nat, R (seq (S n)) (seq n)).
+
+(*On utilise les deux sens de l'équivalence entre une imlplication et sa contraposée dans la preuve de indirect*)
+Lemma contraposee : forall p q:Prop, (~p -> ~q) <-> (q -> p).
+split. (*->  avec tiers exclus*)
+intros npInq qTrue.
 assert (classic -> p). (* on va ici utiliser classic plutôt que pierce*)
 intro classic.
 apply classic.
@@ -505,30 +527,95 @@ apply npInq; assumption.
 apply cl_pl.
 assumption.
 apply classic_ax.
+
+(*<- sans tiers exclus*)
+intros npInq np qT.
+destruct np.
+apply npInq.
+assumption.
 Qed.
 
+(* Un petit lemme bien utile pour la suite *)
+Lemma notImp : forall p q:Prop, ~(p -> q) -> (~q /\ p).
+  intros p q npImpq.
+  split.
+
+  (*~(p -> q) -> ~q*)
+  intro qT.
+  destruct npImpq.
+  intro pT.
+  assumption.
+
+  (*~(p -> q) -> p*)
+  assert (peirce -> p).
+  apply cl_pl.
+  intro classic.
+  apply classic.
+  intro np.
+  destruct npImpq.
+  intro pT.
+  exfalso.
+  apply np.
+  assumption.
+  apply H.
+  apply classic_ax.
+Qed.
+
+
+(*Maintenant on rentre dans la partie importante de la preuve : la construction de l'élément suivant dans la construction de notre suite décroissante. Je l'ai mise dans un lemme à part car on en a besoin deux fois.*)
+(*.*)
+Lemma constr_seq : forall A:Set, forall R : A->A->Prop, forall x:A, ~Acce A R x -> (exists y: A, ~Acce A R y /\ R y x).
+  intros A R x.
+  (*on utilise le fait que x n'est pas accessible*)
+ assert (~Acce A R x -> ~ (forall y: A, R y x -> Acce A R y)).
+apply contraposee.
+apply Accessible.
+intro nax.
+
+(*on utilise forallexists*)
+assert (exists y, ~(R y x -> Acce A R y)).
+apply forallExists.
+apply classic_ax.
+apply H.
+assumption.
+destruct H0 as [y H0].
+exists y.
+
+(*il ne nous reste plus qu'à appliquer le lemme précédent*)
+apply notImp.
+assumption.
+Qed.
+
+
 Theorem indirect : forall A:Set, forall R:A->A->Prop, bienFonde2 A R -> bienFonde A R.
+(* on commence par dire qu'on veut prouver la contraposée*)
 intros A R.
 apply contraposee.
 intros nbfR bf2.
 destruct bf2.
+
+(*on veut alors récupérer un élément non accessible qui nous permettra de prouver que la relation est non vide (ce qui est une des hypothèses de l'axiome du choix dépendant*)
 assert (exists na:A, ~Acce A R na).
 apply forallExists.
 apply classic_ax.
 assumption.
 destruct H as [na NAcc].
-(*assert (exists seq_set : nat -> Set, forall s:Set, exists n : nat, seq_set n = s -> exists x : (s n), seq_set 0 = {na|} -> )
 
-exists (Fixpoint dec_seq (n :nat):= match n with 
-|0 -> na
-|n -> *)
- (*On a donc trouvé un élément non accessible. Cet élément sera le départ de notre suite infinie décroissante*)
+(*On peut à présent appliquer l'axiome du choix dépendant*)
+apply choice with (P:=fun x => ~Acce A R x).
 
+(*on montre que la relation est non vide*)
+assert (exists y: A, ~Acce A R y /\ R y na).
+apply constr_seq.
+assumption.
+destruct H as [y H].
+exists na.
+exists y.
+split;assumption.
 
-
-admit. (*TODO*)
+(*on tombe alors sur le cas de construction du lemme précédent*)
+apply constr_seq.
 Qed.
-
 
 
 (**************************************************)
