@@ -682,10 +682,7 @@ Definition div2 (n: nat) : {p:nat | n = p+p}+{p:nat | pred n = p+p} :=
 
 
 (** Question 2: Ecrivez (sans tactique) une fonction prédecesseur fortement spécifiée. *)
-Lemma refl : 0 = 0.
-reflexivity.
-Qed.
-Print refl.
+
 (*Definition pred (n:nat) : {p:nat|n = S p}+{n = 0} := 
   match n return {p:nat|n = S p}+{n = 0} with
     |0 => inright (eq_refl)
@@ -699,11 +696,16 @@ Search nat.
 Print nat.
 Definition pred' : forall n:nat, {p:nat | n = S p}+{n = 0}.
   intro n.
-  assert (n = 0 \/ n > 0).
-  inversion n. 
-  unfold sumor.
-  
-  (** Vos tactiques ici ... *)
+  assert (n = 0 \/ 0 < n).
+  case (zerop n).
+  intro n0.
+  left.
+  assumption.
+  intro ng0.
+  right.
+  assumption.
+  destruct H. (*ceci ne fonctionne pas*)
+ 
 Defined.
 
 
