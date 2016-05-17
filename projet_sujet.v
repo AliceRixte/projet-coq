@@ -486,9 +486,10 @@ théorie des ensembles de Zermelo-Fraenkel
 (cf.Wikipedia).*)
 (**  *)
 
-Lemma classic_ax : classic.
-admit.
-Qed. (*TODO : OK?*)
+Axiom classic_ax : peirce.
+
+(*Axiom choice : forall A:Set, forall seq_set : nat -> Set, (forall ) forall B: Set, (exists n : nat, A = seq n) -> (exists seq_el: nat -> A,*) 
+
 
 (** *** Exercice 6: la réciproque **)
 (***********************************)
@@ -496,9 +497,14 @@ Qed. (*TODO : OK?*)
 
 Lemma contraposee : forall p q:Prop, (~p -> ~q) -> q -> p.
 intros p q npInq qTrue.
-apply classic_ax.
+assert (classic -> p). (* on va ici utiliser classic plutôt que pierce*)
+intro classic.
+apply classic.
 intro np.
 apply npInq; assumption.
+apply cl_pl.
+assumption.
+apply classic_ax.
 Qed.
 
 Theorem indirect : forall A:Set, forall R:A->A->Prop, bienFonde2 A R -> bienFonde A R.
@@ -506,6 +512,20 @@ intros A R.
 apply contraposee.
 intros nbfR bf2.
 destruct bf2.
+assert (exists na:A, ~Acce A R na).
+apply forallExists.
+apply classic_ax.
+assumption.
+destruct H as [na NAcc].
+(*assert (exists seq_set : nat -> Set, forall s:Set, exists n : nat, seq_set n = s -> exists x : (s n), seq_set 0 = {na|} -> )
+
+exists (Fixpoint dec_seq (n :nat):= match n with 
+|0 -> na
+|n -> *)
+ (*On a donc trouvé un élément non accessible. Cet élément sera le départ de notre suite infinie décroissante*)
+
+
+
 admit. (*TODO*)
 Qed.
 
@@ -564,22 +584,38 @@ Require Import Coq.Arith.Even.
 Open Scope nat_scope.
 Parameter div2_of_even : forall n:nat, even n -> {p:nat | n = p+p}.
 Parameter test_even : forall n:nat, {even n}+{even (pred n)}.
+Print sumbool.
 
-Check {{p:nat | 0 = p+p}}+{{p:nat | pred 1 = p+p}}.
 Definition div2 (n: nat) : {p:nat | n = p+p}+{p:nat | pred n = p+p} :=
   match test_even n with
-    |left n_ev => left (div2_of_even n n_ev)
-    |right nm1_ev => right (div2_of_even (pred n) nm1_ev)
+    |left n_ev  => inl (div2_of_even n n_ev)
+    |right nm1_ev => inr (div2_of_even (pred n) nm1_ev)
     end.
                                                                            
 
 
 (** Question 2: Ecrivez (sans tactique) une fonction prédecesseur fortement spécifiée. *)
+Lemma refl : 0 = 0.
+reflexivity.
+Qed.
+Print refl.
+(*Definition pred (n:nat) : {p:nat|n = S p}+{n = 0} := 
+  match n return {p:nat|n = S p}+{n = 0} with
+    |0 => inright (eq_refl)
+    |S p => inleft {p|n = S p}
+  end.*)
+      
 
-
+Search nat.
 (** Question 3: Ecrivez (uniquement avec des tactiques) une fonction prédecesseur fortement spécifiée. *)
-Reset pred'.
+(*Reset pred'.*)
+Print nat.
 Definition pred' : forall n:nat, {p:nat | n = S p}+{n = 0}.
+  intro n.
+  assert (n = 0 \/ n > 0).
+  inversion n. 
+  unfold sumor.
+  
   (** Vos tactiques ici ... *)
 Defined.
 
