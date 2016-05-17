@@ -440,7 +440,7 @@ unfold P. (*hérédité*)
 intros x HR xInSeq.
 destruct xInSeq as [n xInSeq].
 
-assert (R (seq (S n)) x). (*Évite d'avoir à faire deux fois la meême preuve*)
+assert (R (seq (S n)) x). (*Évite d'avoir à faire deux fois la même preuve*)
 rewrite xInSeq.
 apply seqIsInfDec.
 apply nonAcce_uneEtape with (a:=seq (S n)).
@@ -552,6 +552,7 @@ Check le_gt_dec.
 Check (le_gt_dec 1 2).
 (** Le "+" de [le_gt_dec] est l'équivalent du ou logique mais à valeur dans les données (possiblement
 spécifiées). *)
+
 Print sumbool.
 Print le_gt_dec.
 
@@ -563,10 +564,14 @@ Require Import Coq.Arith.Even.
 Open Scope nat_scope.
 Parameter div2_of_even : forall n:nat, even n -> {p:nat | n = p+p}.
 Parameter test_even : forall n:nat, {even n}+{even (pred n)}.
-(*Check {even n}
-Function div2 (n : nat) : forall n: nat , {p:nat | n = p+p}+{p:nat | pred n = p+p} := 
-  match test_even n with 
-    |left a -> *)
+
+Check {{p:nat | 0 = p+p}}+{{p:nat | pred 1 = p+p}}.
+Definition div2 (n: nat) : {p:nat | n = p+p}+{p:nat | pred n = p+p} :=
+  match test_even n with
+    |left n_ev => left (div2_of_even n n_ev)
+    |right nm1_ev => right (div2_of_even (pred n) nm1_ev)
+    end.
+                                                                           
 
 
 (** Question 2: Ecrivez (sans tactique) une fonction prédecesseur fortement spécifiée. *)
