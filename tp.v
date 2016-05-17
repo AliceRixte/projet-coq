@@ -274,7 +274,7 @@ Eval compute in pgcd 40 150.
 
 
 
-(** ** 3. Types polymorphes, listes et types dépendants **)
+(** ** 3. Types polymorphes, listes et types dépendants **) 
 (*********************************************************)
 Require Import List.
 Check list. Print list.
@@ -320,6 +320,26 @@ Search nat.
 Eval compute in fold_left plus 0 (1::32::2::3::4::nil).
 (** **** Question Bonus (bonus pris en compte pour le projet):*)
 (** Ecrire une fonction de tri.  *)
+Locate Nat.
+
+
+(* bon j'ai fait ça au dernier moment et la librairie nat ne voulait pas s'installer. Du coup, je suis pas sûr que ça marche*)
+Fixpoint insert (n:nat) (l:list nat) :=
+  match l with
+    | nil => n::nil
+    | h::t => if ltb h n then
+                h::(insert n h)
+              else
+                n::h::t
+    end.
+
+(*ici, on va utiliser un tri par insertion basique*)
+Fixpoint sort (l: list nat) :=
+  match l with
+    |nil => nil
+    |h::t => insert h (sort t)
+  end.
+      
 
 (** ** 4. Résumé **)
 (******************)
